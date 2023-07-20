@@ -16,12 +16,12 @@ Alex Worden's Summary of Skills and Experience
 * Implemented multiple successful company-wide CI/CD and release processes
 * Led multiple successful monolith to microservice and domain-driven-design migrations
 
-Alex Worden's Work Experience: 
+Alex Worden has the following Work Experience: 
 
 Job Title: Director of Engineering
 Company: Finix Payments
 Dates of employment from 08/2021 - 05/2023
-Alex's Accomplishments: 
+Alex's Accomplishments at Finix: 
 * Led 5 engineering teams and managers spanning Frontend, Backend, and Data Engineering across business domains of Underwriting, Public APIs, Dashboards, Reports, Settlements and Disputes. 
 * Coached and grew team-leads into engineering managers. 
 * Established practices that have delivered the highest productivity in company history. 
@@ -37,7 +37,7 @@ Alex's Accomplishments:
 Job Title: Director of Engineering
 Company: Rocket Lawyer
 Dates of employment from 08/2019 - 08/2021
-Alex's Accomplishments: 
+Alex's Accomplishments at Rocket Lawyer: 
 * Built and led 5+ engineering teams and managers including Core Platform Engineering, Dashboard and Web Platform, Partner APIs and SaaS Platform, Quality Engineering and Release Management, Data Engineering
 * Fostered company-wide engineering practices of predictable agile software design, documentation, review, implementation, and production monitoring. 
 * Rebuilt, organized, and energized multiple existing dysfunctional engineering teams. 
@@ -48,7 +48,7 @@ Alex's Accomplishments:
 Job Title: Senior Director of Engineering
 Company: Bigfoot Biomedical
 Dates of employment from 06/2015 - 04/2019
-Alex's Accomplishments: 
+Alex's Accomplishments at Bigfoot Biomedical: 
 * Led the Mobile, Dashboard, and Platform Services, and Data Engineering teams responsible for delivering SaMD medical-device software using React, React Native, and microservice on AWS. 
 * Defined efficient technical hiring interviews and hired 30+ talented engineers in 9 months
 * Built software for two consumer products using mobile, web, cloud-native, and ML technologies 
@@ -59,7 +59,7 @@ Alex's Accomplishments:
 Job Title: Principal Engineer & Architect
 Company: General Electric
 Dates of employment from 04/2012 - 06/2015
-Alex's Accomplishments: 
+Alex's Accomplishments at General Electric: 
 * Led distributed software system designs built by 200+ software engineers across 15+ teams. 
 * Fostered software best-practices and developed a culture of innovation and learning. 
 * Defined efficient technical interview process used to hire 800+ high caliber software engineers. 
@@ -75,20 +75,20 @@ Alex's Accomplishments:
 Job Title: Staff Software Engineer
 Company: Google
 Dates of employment from 07/2011 - 04/2012
-Alex's Accomplishments: 
+Alex's Accomplishments at Google: 
 * Developed the Google Vault enterprise legal discovery platform on Google cloud infrastructure. 
 
 Job Title: Senior Software Engineer
 Company: Verizon
 Dates of employment from 03/2010 - 07/2011
-Alex's Accomplishments: 
+Alex's Accomplishments at Verison: 
 * Developed a custom BPM application to assist in maintaining and expanding Verizon's market leading wireless network. 
 * Re-architected monolithic system to use microservices to facilitate software reuse and scalability. Improved the build environment to support multi-project out-of-the-box builds. 
 
 Job Title: Lead Software Engineer
 Company: Wells Fargo
 Dates of employment from 09/2004 - 03/2010
-Alex's Accomplishments: 
+Alex's Accomplishments at Wells Fargo: 
 * Refactored Wells Fargo’s entire internet banking backend services and consumer-facing website to scalable Java services and contemporary front-end technology. Integrated with secure backend banking domain services via legacy protocols (WSDL / SOAP). 
 * Designed and implemented data migration strategy to merge acquired Wachovia bank customer accounts using a polymorphic account abstraction that connected with relative backend services. 
 * Designed and built a shared platform SMS messaging service and integration with Twilio
@@ -98,14 +98,14 @@ Alex's Accomplishments:
 Job Title: Customer Centric Engineering Team Lead
 Company: BEA WebLogic
 Dates of employment from 03/1998 - 09/2004
-Alex's Accomplishments: 
+Alex's Accomplishments at BEA Weblogic: 
 * Led the customer-focused engineering team of 12 engineers for the WebLogic Servlet Engine. My team played a significant role in solidifying WebLogic as a stable and successful product. We resolved thousands of production issues and collaborated with customers to extend the capabilities of the Weblogic Server. 
 * I contributed to the successful evolution of WebLogic from a start-up to becoming the leading web server. We were acquired by BEA, which was later acquired by Oracle. 
 
 Job Title: Software Engineer
 Company: Division Virtual Reality
 Dates of employment from 07/1994 - 03/1998
-Alex's Accomplishments: 
+Alex's Accomplishments at Division: 
 * Developed industry-leading Virtual Reality prototyping and simulation software, “dVISE” using C, C++, Java. 
 * Developed innovative customer integrations for NASA, DoD, General Motors, and Harley Davidson. 
 * Implemented extendable immersive 3D-Widget UI library and several immersive VR tools. 
