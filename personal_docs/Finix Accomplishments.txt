@@ -1,0 +1,61 @@
+﻿Finix Accomplishments
+Projects
+* Dashboard Redesign
+   * Led Dashboard team to deliver complete customer-need-focused redesign
+* Customer Self-Service Signup 
+   * Self-Service Sandbox signup to allow prospective clients to generate sales leads for growth clients. 
+   * Self-Service Production signup automates much of the regulatory and underwriting information gathering and manual activities
+* Sub-Merchant PCI Compliance 
+   * Build a set of white-labeled hosted forms to allow Merchants to invite their Sub-Merchants to attest to PCI regulations
+   * Built secure distribution-link mechanism 
+   * Built a management console to allow merchants to track the compliance of their sub-merchants
+* Sub-Merchant Self Signup Embeddable Forms
+   * White-labeled no-code hosted onboarding forms allow sub-merchants of Finix Customers (SaaS Clients) to rapidly and automatically onboard new sub-merchants to their platforms. 
+   * Built a secure unique link distribution mechanism to allow Merchants to invite Sub-Merchants to sign-up. The signup link involved collecting 10+ pages of information and allowed the Sub-Merchant to revisit the link without the need for an account, gathering the data before submitting to the automated underwriting engine. 
+   * Built a sub-merchant signup integration API for the Merchant
+   * Built a monitoring dashboard for the Merchant to track their sub-merchant signup activities
+   * This reduced the time-to-processing for payments on the Finix platform. 
+* Automated Underwriting Engine
+   * Developed a new UW engine to more rapidly evolve UW capabilities
+   * Automated UW engine was able to underwrite and provision a merchant within 30 seconds. 
+   * Followed DDD principles and broke away from the Finix monolith to allow for faster development. 
+   * Simple integration model to allow rapid and easy integration of 3rd party verification resources
+   * Configurable UW workflow engine
+   * Simple parameterized UW workflow configuration design to allow for ‘black-box’ implicit automatic configuration based upon underwriting requirements and capabilities. 
+   * Hierarchical parameterization allows for AI adaptive learning based upon performance of underwritten merchants. 
+* Hierarchical Configuration Engine
+   * My team implemented a centralized configuration service that can expand to store any number of “configuration bundles” categories
+   * Config Bundles inherit (or override) properties from same-category bundles of parent nodes. 
+   * Allows for complex sets of configurations to be centralized, reused, updates at runtime
+   * Allows for tenancies of configurations to inherit from default patterns, then override specific configurations and stay in sync with updates to configurations that are inherited at run-time. 
+* Data Processing and Report Generation Performance Improvements
+   * Refactored a problematic ETL and inefficient Data Warehousing design in order to increase successful report generation to 99.9% success rate. 
+   * Reduced report latency from 45 minutes to < 3 minutes
+   * Introduced incremental Materialized Views to process financial processing data in batches based upon elapsed time. The older data is very static, vs new is constantly updating. 
+   * The team worked to resolve ETL issues and make batch processing failures recoverable. 
+Process Management
+* SOC-2 Compliant Development and Release Process
+   * Worked with Compliance Officer to analyze SOC-2 compliance regulations
+   * Analyzed current engineering practices and worked with lead engineers to understand their needs. 
+   * Determined that 95% of engineering practices were acceptable. 
+   * Documented engineering practices and designed changes to minimize impact on working practices and be in compliance
+   * Documented “engineer oriented” workflow instructions to help everyone understand and follow the development and release process. 
+* Quality Release Management
+   * Worked with the quality engineers, business stakeholders, and engineers to define a release process that would allow for quality control over the complexity in each release, ample time to verify a release, and enable coordinated release-when-ready releases to be scheduled appropriately. 
+* Project Estimation and Tracking 
+   * Built multiple spreadsheets to help estimate and project the eng-org’s capacity for delivery over an extended timeframe (3-9 months). It tracks the projected allocation of each IC to each project deliverable. It allows for TBH team-members to be estimated. It allows for IC’s to have different performance characteristics to simulate ramp-up, partial allocation, PTO etc. 
+   * This tool allowed us to identify and break up large projects down to more feasible deadlines. It shows the capacity of the team and allows for rapid macro planning. 
+   * This enabled mission-critical MVP projects to be delivered predictably. 
+   * This gave team-members a voice and reasonable plan to deliver to. 
+   * I projected project burn-down charts on TV’s, which gamified the delivery of projects and boosted morale, motivation, and delivery. 
+People Management
+* Growth Management
+   * Performance Evaluation and Promotion Rubric
+   * Refined and defined the Engineering rubric for levels IC1 - IC6
+   * Walked my team through and used for mentoring, promotions, and comp adjustment
+   * Built a spreadsheet to track IC levels across the eng-org’s teams and used it for performance calibration across multiple eng-director orgs. Used it to negotiate comp adjustments to retain the best performers. 
+   * Built a spreadsheet to gauge IC’s performance against 20+ traits, allowing a profile of each team-member to be easily maintained and visualized. This helps personalize the areas for improvement of each team-member and gives an overall perspective of the balance of traits across the teams. 
+* Mentoring
+   * Coached 4 lead engineers to become managers
+   * Clearly documented and defined Team Lead vs Tech Lead vs Engineering Manager roles
+*
