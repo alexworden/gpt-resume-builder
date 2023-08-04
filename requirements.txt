@@ -4,3 +4,5 @@ chromadb
 tiktoken
 unstructured
 
+unstructured_inference
+pytesseract

@@ -24,8 +24,8 @@ class ResumeBuilder:
     # Enable to save to disk & reuse the model (for repeated queries on the same data)
     self.PERSONAL_DOCS_FOLDER = "personal_docs"
     self.PERSIST_FOLDER = self.PERSONAL_DOCS_FOLDER + "_persist"
-    # GPT_MODEL = "gpt-3.5-turbo-16k"
-    self.GPT_MODEL = "gpt-3.5-turbo"
+    # GPT_MODEL = "gpt-3.5-turbo"
+    self.GPT_MODEL = "gpt-3.5-turbo-16k"
     self.GENERATED_DOCS_FOLDER = getattr(constants, "GENERATED_DOCS_FOLDER", "~/Documents/GeneratedCoverLetters")
 
     self.chat_history = []
@@ -60,7 +60,7 @@ class ResumeBuilder:
       # create a new index
       loader = DirectoryLoader(personal_docs_folder)
       self.index = VectorstoreIndexCreator(
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=100), vectorstore_kwargs={"persist_directory":self.PERSIST_FOLDER}).from_loaders([loader])
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=0), vectorstore_kwargs={"persist_directory":self.PERSIST_FOLDER}).from_loaders([loader])
     else:
       print("Reusing vectorstore from " + self.PERSIST_FOLDER + " directory...\n")
       vectorstore = Chroma(persist_directory=self.PERSIST_FOLDER, embedding_function=OpenAIEmbeddings())
@@ -68,7 +68,7 @@ class ResumeBuilder:
     
     self.chain = ConversationalRetrievalChain.from_llm(
       llm=ChatOpenAI(model=self.GPT_MODEL),
-      retriever=self.index.vectorstore.as_retriever(search_kwargs={"k": 10}),
+      retriever=self.index.vectorstore.as_retriever(search_kwargs={"k": 20}),
     )
 
   # ====================================================================================================
@@ -107,6 +107,8 @@ class ResumeBuilder:
     company_name = input("Enter the company name: ")
 
     return (company_name, job_title, job_desc)
+
+  # ====================================================================================================
 
   def get_job_requirements(self):
     if (self.job_desc == None):
@@ -153,33 +155,85 @@ class ResumeBuilder:
 
   # ====================================================================================================
 
+  def generate_resume(self, applicant_name, company_name, job_title, job_desc, output_folder=None):
+    output_folder = output_folder or self.GENERATED_DOCS_FOLDER
+
+    query = "Write a resume for " + applicant_name + " with sections the following sections: 'Summary' describing " + applicant_name + "'s overall philosophy and value, 'Summary of Skills and Experience' with a short bullet list of " + applicant_name + "'s skills and experience that are relvant, 'Work Experience' with an entry for each company " + applicant_name + " has worked at and a 3-5 item bullet list of " + applicant_name + "'s relevant accomplishments, and 'Education'. The resume should highlight " + applicant_name + "'s skills and experience that are relevant to the qualifications outlined in the following job description:\n" + job_desc + "\n"
+
+    print("\n\n... Generating Resume ...\n ")
+    cover_letter = self.ask_conversational_question(query, True)
+    print("\n\n" + cover_letter + "\n\n")
+    print("===========================================================\n")
+
+    #Generate a PDF of the resume letter and save to a file named with the company name and job title
+    from fpdf import FPDF
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(0, 5, cover_letter)
+    # write the pdf to the output folder
+    output_folder = os.path.expanduser(output_folder)
+    if not os.path.exists(output_folder):
+      os.makedirs(output_folder)
+    output_filename = output_folder + "/Resume of " + applicant_name + " (" + company_name + "_" + job_title + ").pdf"
+    pdf.output(output_filename)
+    print("Saved resume to " + output_filename + "\n")
+
+  # ====================================================================================================
+
+  def printQuestionPrompt(self, applicant_name):
+    print("\n=====================================================\n" +
+          "Ask a question about " + applicant_name + " or 'Help'\n" +
+          "=====================================================\n")
+
+  # ====================================================================================================
+
   def start(self):
-
+    company_name = None
+    job_title = None
     applicant_name = self.get_answer("What is the name of the person that the resume is about? Reply with only the name and use the full name if you have that information, otherwise reply with the token UNKNOWN")
-
     companies_worked_for = self.get_answer("List all of the companies that " + applicant_name + " has worked for in a bullet list in reverse chronological order with start and end dates")
 
     print(applicant_name + " has worked for the following companies:\n" + companies_worked_for + "\n")
 
     while True:
-      print("\n=====================================================\n" +
-            "Ask a question about " + applicant_name + ". Enter 'Q = Quit', 'CL = Gen Cover Letter' or 'JD = Set Job Description'" +
-            "\n=====================================================\n")
+      self.printQuestionPrompt(applicant_name)
       userInput = input("Q: ")
       if userInput in ['Q', 'Quit']:
         break
       elif userInput in ['JD', 'Set Job Description']:
         (company_name, job_title, job_desc) = self.set_job_description(applicant_name=applicant_name)
+      elif userInput in ['R']:
+        # If company_name and job_title are not set, ask the user to set them
+        if (company_name == None or job_title == None):
+          print("Company name and job title have not been set. Use the 'JD' command to set the job description.")
+          continue
+        self.generate_resume(applicant_name=applicant_name, company_name=company_name, job_title=job_title, job_desc=job_desc)
+        self.printQuestionPrompt(applicant_name)
       elif userInput in ['CL', 'Gen Cover Letter']:
+        # If company_name and job_title are not set, ask the user to set them
+        if (company_name == None or job_title == None):
+          print("Company name and job title have not been set. Use the 'JD' command to set the job description.")
+          continue
         self.generate_cover_letter(applicant_name=applicant_name, company_name=company_name, job_title=job_title, job_desc=job_desc)
-        print("Ask more questions about the skills and experience of " + applicant_name + ". Enter 'quit' to exit.\n")
-      elif userInput in ['R', 'Refresh'] :
+        self.printQuestionPrompt(applicant_name=applicant_name)
+      elif userInput in ['Refresh'] :
         index = self.build_embedding_chain(self.PERSIST_FOLDER, self.PERSONAL_DOCS_FOLDER, clean=True)
         chat_history = []
+      elif userInput in ['Help']:
+        print("\n=====================================================\n" +
+              "Commands:\n" +
+              "JD = Set Job Description\n" +
+              "R = Generate Resume\n"
+              "CL = Generate Cover Letter\n" +
+              "Refresh = Refresh Documents\n" +
+              "Q = Quit\n" +
+              "=====================================================\n")
       else:
-        userInput = "answer the following question '" + userInput + "' in relation to " + applicant_name + ". Assume that references to 'I' and 'me' refer to " + applicant_name + ". You answers should substitute the personal pronouns 'I' and 'me' with the name " + applicant_name + "."
+        userInput = "Assume the role of " + applicant_name + " as a prospective job candidate and answer the following question '" + userInput + "'"
         print("\n... Generating answer ...\n")
         answer = self.ask_conversational_question(userInput)
+        # answer = self.ask_conversational_question("Translate the following text into a first-person perspective as if it were written by the subject:" + answer)
         print(answer + "\n")
 
   # END OF CLASS ResumeBuilder ====================================================================================================
