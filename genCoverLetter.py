@@ -1,6 +1,7 @@
 import os
 import sys
 import shutil
+import json
 
 import openai
 from langchain.chains import ConversationalRetrievalChain, RetrievalQA
@@ -18,14 +19,21 @@ import constants
 
 os.environ["OPENAI_API_KEY"] = constants.APIKEY
 
+class UserContext:
+    def __init__(self, applicant_name):
+        self.applicant_name = applicant_name
+        self.company_name = None
+        self.job_title = None
+        self.job_desc = None
+
 class ResumeBuilder:
 
   def __init__(self):
     # Enable to save to disk & reuse the model (for repeated queries on the same data)
     self.PERSONAL_DOCS_FOLDER = "personal_docs"
     self.PERSIST_FOLDER = self.PERSONAL_DOCS_FOLDER + "_persist"
-    # GPT_MODEL = "gpt-3.5-turbo"
-    self.GPT_MODEL = "gpt-3.5-turbo-16k"
+    self.GPT_4K_MODEL = "gpt-3.5-turbo"
+    self.GPT_16K_MODEL = "gpt-3.5-turbo-16k"
     self.GENERATED_DOCS_FOLDER = getattr(constants, "GENERATED_DOCS_FOLDER", "~/Documents/GeneratedCoverLetters")
 
     self.chat_history = []
@@ -34,19 +42,40 @@ class ResumeBuilder:
   # ====================================================================================================
 
   def ask_conversational_question(self, question, clear_chat_history=False): 
-      # print("\n=========================================\nAsking conversational question:\n" + 
-      #       question + "\n=========================================\n")
-      if (clear_chat_history):
-        self.chat_history = []
-      
-      answer = self.chain({"question": question, "chat_history": self.chat_history})['answer']
-      self.chat_history.append((question, answer))
-      return answer
+    if (clear_chat_history):
+      self.chat_history = []
+    
+    # full_prompt = "Question: " + question + "\nChat History: " + str(self.chat_history)
+    # print("Sending prompt to OpenAI: " + full_prompt)
+    answer = self.chain_small({"question": question, "chat_history": self.chat_history})['answer']
+    self.chat_history.append((question, answer))
+    return answer
 
   # ====================================================================================================
 
-  def get_answer(self, question):
+  def ask_simple_with_context(self, question):
+    return self.chain_small({"question": question, "chat_history": []})['answer']
+
+  # ====================================================================================================
+
+  def ask_complex_with_context(self, question):   
+    return self.chain_big({"question": question, "chat_history": []})['answer']
+
+  # ====================================================================================================
+
+  def ask_wrt_context(self, question):
     return self.index.query(question)
+
+  # ====================================================================================================
+  
+  def ask_without_context(self, prompt):
+    response = openai.Completion.create(
+      model="gpt-3.5-turbo-instruct",
+      prompt=prompt,
+      temperature=0,
+      max_tokens=300
+    )
+    return response['choices'][0]['text']
 
   # ====================================================================================================
 
@@ -60,20 +89,27 @@ class ResumeBuilder:
       # create a new index
       loader = DirectoryLoader(personal_docs_folder)
       self.index = VectorstoreIndexCreator(
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=0), vectorstore_kwargs={"persist_directory":self.PERSIST_FOLDER}).from_loaders([loader])
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=0), 
+        vectorstore_kwargs={"persist_directory":self.PERSIST_FOLDER}).from_loaders([loader])
     else:
       print("Reusing vectorstore from " + self.PERSIST_FOLDER + " directory...\n")
       vectorstore = Chroma(persist_directory=self.PERSIST_FOLDER, embedding_function=OpenAIEmbeddings())
       self.index = VectorStoreIndexWrapper(vectorstore=vectorstore)
     
-    self.chain = ConversationalRetrievalChain.from_llm(
-      llm=ChatOpenAI(model=self.GPT_MODEL),
+    self.chain_small = ConversationalRetrievalChain.from_llm(
+      llm=ChatOpenAI(model=self.GPT_4K_MODEL),
+      retriever=self.index.vectorstore.as_retriever(search_kwargs={"k": 8}),
+      verbose=False,
+    )
+
+    self.chain_big = ConversationalRetrievalChain.from_llm(
+      llm=ChatOpenAI(model=self.GPT_16K_MODEL),
       retriever=self.index.vectorstore.as_retriever(search_kwargs={"k": 20}),
     )
 
   # ====================================================================================================
 
-  def set_job_description(self, applicant_name):
+  def set_job_description(self, user_context):
     self.chat_history = []
     # Read multiple lines of input from the user until they enter a line with only the word "END"
     print("\nEnter the job description. Enter END on a new line when you are done.")
@@ -85,7 +121,7 @@ class ResumeBuilder:
       lines.append(line)
 
     # Join the lines together into a String with a newline character between each line
-    job_desc = "\n".join(lines) 
+    user_context.job_desc = "\n".join(lines) 
 
     '''
     # Use get_answer() to get the job title and company name from the job description
@@ -103,38 +139,72 @@ class ResumeBuilder:
     if answer != None:
       company_name = answer
     '''
-    job_title = input("Enter the job title: ")
-    company_name = input("Enter the company name: ")
+    user_context.job_title = input("Enter the job title: ")
+    user_context.company_name = input("Enter the company name: ")
 
-    return (company_name, job_title, job_desc)
 
   # ====================================================================================================
 
-  def get_job_requirements(self):
-    if (self.job_desc == None):
+  def get_job_requirements(self, user_context):
+    if (user_context.job_desc == None):
       print("Job description has not been set. Use the 'JD' command to set the job description.")
       return
-    
-    top_requirements = self.ask_conversational_question("Provide a bullet list of the 10 most important requirements for the following job description?\n" + self.job_desc)
-    print("\nTop Job Requirements:\n" + top_requirements)
 
-    most_relevant_skills = self.ask_conversational_question("Given the following job requirements: \n" 
-                                                      + top_requirements + "\n\nFor each requirement, quote the requirement in the order given, then provide a first person quote from " 
-                                                      + self.applicant_name + " on how their skills and/or experience meet the requirement. For example, if the requirement is 'Must have a degree in Computer Science', then the answer should be 'I have a degree in Computer Science from the University of Toronto'.Provide only the answers in a bullet list in the same order as the requirements and nothing else.")
-    
-    print("\n" + self.applicant_name + "'s most relevant experience to the most important requirement in the job description are:\n\n" + most_relevant_skills + "\n")
+    job_qualification = self.ask_without_context("You are a diligent and smart job applicant. Summarize and prioritize up to 8 qualifications from the following job description, providing your answer in JSON format where each qualification summary is a string in a JSON list.\n\nJob Description:\n" + user_context.job_desc)
+    print("\nTop Job Requirements:\n" + job_qualification)
 
-    return (top_requirements, most_relevant_skills)
+    # Parse the top_requirements as JSON and iterate over the list of job_qualifications
+    job_qualification = json.loads(job_qualification)
+    most_relevant_skills = []
+    for qualification in job_qualification:
+      # Create a short paragraph on how the candidate's context meets each job qualification
+      candidate_skill = self.ask_wrt_context("You are writing a bullet point in a job cover letter. Your answer must be from a first person perspective. Avoid quoting text from the qualification word-for-word. Write a concise summary sentence that demonstrates how my experiences and skills meet the following job qualification: " + qualification + "\n\n")
+      print("\nJob qualification: " + qualification + "\nExperience: " + candidate_skill + "\n\n")
+      # Add the candidate_skill to the list of most_relevant_skills
+      most_relevant_skills.append(candidate_skill)
+
+
+    print("\n" + user_context.applicant_name + "'s most relevant experience to the most important requirement in the job description are:\n")
+    # Create a bullet list of the most_relevant_skills and append to a string
+    skills_list = ""
+    for skill in most_relevant_skills:
+      skills_list += " * " + skill + "\n"
+    
+    print("Candidate Skills:\n" + skills_list + "\n")
+
+    cleaned_json_skills = self.ask_complex_with_context("You are an recruitment expert and have been asked to copy-edit the following list of candidate skills to be included in a cover letter. You MUST provide your answer in JSON format where each list item is a string in a JSON list like the following format:\n [\"Item one\", \"Item two\", \"Item three\"]. Remove repeated skills and redundant statements from the input list items and condense each item in the following list without losing valuable Knowledge, Skills, and Abilities (KSA) or soft skills such as such as optimism, kindness, intellectual curiosity, strong work ethic, empathy, and integrity. Prioritise the items, placing the most important first and limit to a maximum of 6 items. Always include the first item as the number of years experience:\n\n" + skills_list)
+    print("Cleaned Skills:\n" + cleaned_json_skills + "\n")
+
+    # parse the jscon cleaned_json_skills into a list
+    # handle exceptions parsing the json
+    try:
+      job_skills = json.loads(cleaned_json_skills)
+    except: 
+      print("Error parsing JSON. Trying to convert to JSON list of strings.")
+      cleaned_json_skills = self.ask_without_context("Format the following into a JSON list of strings:\n" + cleaned_json_skills  + "\n")
+      try:
+        job_skills = json.loads(cleaned_json_skills)
+      except:
+        print("Unable to create cover letter. Error parsing JSON response from OpenAI: \n" + cleaned_json_skills + "\n")
+        return []
+
+    return (job_skills)
 
   # ====================================================================================================
 
-  def generate_cover_letter(self, applicant_name, company_name, job_title, job_desc, output_folder=None):
+  def generate_cover_letter(self, user_context, output_folder=None):
     output_folder = output_folder or self.GENERATED_DOCS_FOLDER
+    skill_list = self.get_job_requirements(user_context)
 
-    query = "Write a job application cover letter from " + applicant_name + " for the role of '" + job_title + "' at company '" + company_name + "' for the job description given below. The cover letter should be addressed to the hiring manager. The cover letter should be no more than 400 words. The cover letter should be written in a polite, friendly, and informal tone that is genuine and enthusiastic. Start the letter with: \"I'm excited to apply for the role of " + job_title + " at " + company_name + ". I believe the following skills and experience I have are a good fit for the role:\". Provide only 3 to 5 bullet points that highlight my skills and experience that are a good match for the requirements stated in the job description. Do not directly quote the phrases used in the job description, but instead, quote my relevant skills and experience. Add a genuine, but not overstated sentence about why the company mission is important to me. Don't elaborate too much. Add a short closing paragraph thanking the hiring manager for their time and consideration. The job description is as follows: \n\n" + job_desc + "\n\n"
+    cover_letter = "Thank you for considering my application for the role of " + user_context.job_title + " at " + user_context.company_name + ". I believe the following skills and experience I have are a great fit:\n\n"
+    for skill in skill_list:
+      cover_letter += " * " + skill + "\n"
+    
+    mission_alignment = self.ask_complex_with_context("You are a diligent and smart job applicant. Write a very short closing statement in a cover letter to demonstrate how the company mission resonates with your interestes, career aspirations, or passions. Provide your answer by completing the following sentence in less than 25 words: \"I am excited about the opportunity to work at " + user_context.company_name + " because I \".\n\n Base your answer upon the following job description:\n\n" + user_context.job_desc + "\n\n")
+    cover_letter += mission_alignment + ".\n\n"
 
-    print("\n\n... Generating cover letter ...\n ")
-    cover_letter = self.ask_conversational_question(query, True)
+    cover_letter += "Thank you for your time and consideration,\n\n" + user_context.applicant_name + "\n\n"
+
     print("Cover Letter:\n\n" + cover_letter + "\n")
     print("\n========================\n")
 
@@ -148,20 +218,20 @@ class ResumeBuilder:
     output_folder = os.path.expanduser(output_folder)
     if not os.path.exists(output_folder):
       os.makedirs(output_folder)
-    output_filename = output_folder + "/" + company_name + "_" + job_title + ".pdf"
+    output_filename = output_folder + "/" + user_context.company_name + "_" + user_context.job_title + ".pdf"
     pdf.output(output_filename)
     print("Saved cover letter to " + output_filename + "\n")
 
 
-  # ====================================================================================================
+# ====================================================================================================
 
-  def generate_resume(self, applicant_name, company_name, job_title, job_desc, output_folder=None):
+  def generate_resume(self, user_context, output_folder=None):
     output_folder = output_folder or self.GENERATED_DOCS_FOLDER
 
-    query = "Write a resume for " + applicant_name + " with sections the following sections: 'Summary' describing " + applicant_name + "'s overall philosophy and value, 'Summary of Skills and Experience' with a short bullet list of " + applicant_name + "'s skills and experience that are relvant, 'Work Experience' with an entry for each company " + applicant_name + " has worked at and a 3-5 item bullet list of " + applicant_name + "'s relevant accomplishments, and 'Education'. The resume should highlight " + applicant_name + "'s skills and experience that are relevant to the qualifications outlined in the following job description:\n" + job_desc + "\n"
+    query = "Write a resume for " + user_context.applicant_name + " with sections the following sections: 'Summary' describing " + user_context.applicant_name + "'s overall philosophy and value, 'Summary of Skills and Experience' with a short bullet list of " + user_context.applicant_name + "'s skills and experience that are relvant, 'Work Experience' with an entry for each company " + user_context.applicant_name + " has worked at and a 3-5 item bullet list of " + user_context.applicant_name + "'s relevant accomplishments, and 'Education'. The resume should highlight " + user_context.applicant_name + "'s skills and experience that are relevant to the qualifications outlined in the following job description:\n" + user_context.job_desc + "\n"
 
     print("\n\n... Generating Resume ...\n ")
-    cover_letter = self.ask_conversational_question(query, True)
+    cover_letter = self.ask_generative_question(query)
     print("\n\n" + cover_letter + "\n\n")
     print("===========================================================\n")
 
@@ -175,48 +245,45 @@ class ResumeBuilder:
     output_folder = os.path.expanduser(output_folder)
     if not os.path.exists(output_folder):
       os.makedirs(output_folder)
-    output_filename = output_folder + "/Resume of " + applicant_name + " (" + company_name + "_" + job_title + ").pdf"
+    output_filename = output_folder + "/Resume of " + user_context.applicant_name + " (" + user_context.company_name + "_" + user_context.job_title + ").pdf"
     pdf.output(output_filename)
     print("Saved resume to " + output_filename + "\n")
 
   # ====================================================================================================
 
-  def printQuestionPrompt(self, applicant_name):
+  def printQuestionPrompt(self, user_context):
     print("\n=====================================================\n" +
-          "Ask a question about " + applicant_name + " or 'Help'\n" +
+          "Ask a question about " + user_context.applicant_name + " or 'Help'\n" +
           "=====================================================\n")
 
   # ====================================================================================================
 
   def start(self):
-    company_name = None
-    job_title = None
-    applicant_name = self.get_answer("What is the name of the person that the resume is about? Reply with only the name and use the full name if you have that information, otherwise reply with the token UNKNOWN")
-    companies_worked_for = self.get_answer("List all of the companies that " + applicant_name + " has worked for in a bullet list in reverse chronological order with start and end dates")
-
-    print(applicant_name + " has worked for the following companies:\n" + companies_worked_for + "\n")
+    user_context = UserContext(applicant_name = self.ask_wrt_context("What is the name of the person that the resume is about? Reply with only the name and use the full name if you have that information, otherwise reply with the token UNKNOWN"))
+    
+    # Print a summary of the companies that the subject has worked for
+    # companies_worked_for = self.query_embedded_context("List all of the companies that " + applicant_name + " has worked for in a bullet list in reverse chronological order with start and end dates")
+    # print(applicant_name + " has worked for the following companies:\n" + companies_worked_for + "\n")
 
     while True:
-      self.printQuestionPrompt(applicant_name)
+      self.printQuestionPrompt(user_context)
       userInput = input("Q: ")
-      if userInput in ['Q', 'Quit']:
+      if userInput in ['q', 'Q', 'Quit']:
         break
-      elif userInput in ['JD', 'Set Job Description']:
-        (company_name, job_title, job_desc) = self.set_job_description(applicant_name=applicant_name)
+      elif userInput in ['JD']:
+        self.set_job_description(user_context)
       elif userInput in ['R']:
         # If company_name and job_title are not set, ask the user to set them
-        if (company_name == None or job_title == None):
-          print("Company name and job title have not been set. Use the 'JD' command to set the job description.")
+        if (user_context.company_name == None or user_context.job_title == None):
+          print("Job Description has not been set. Use the 'JD' command to set the job description.")
           continue
-        self.generate_resume(applicant_name=applicant_name, company_name=company_name, job_title=job_title, job_desc=job_desc)
-        self.printQuestionPrompt(applicant_name)
-      elif userInput in ['CL', 'Gen Cover Letter']:
+        self.generate_resume(user_context)
+      elif userInput in ['CL']:
         # If company_name and job_title are not set, ask the user to set them
-        if (company_name == None or job_title == None):
-          print("Company name and job title have not been set. Use the 'JD' command to set the job description.")
+        if (user_context.company_name == None or user_context.job_title == None):
+          print("Job Description has not been set. Use the 'JD' command to set the job description.")
           continue
-        self.generate_cover_letter(applicant_name=applicant_name, company_name=company_name, job_title=job_title, job_desc=job_desc)
-        self.printQuestionPrompt(applicant_name=applicant_name)
+        self.generate_cover_letter(user_context)
       elif userInput in ['Refresh'] :
         index = self.build_embedding_chain(self.PERSIST_FOLDER, self.PERSONAL_DOCS_FOLDER, clean=True)
         chat_history = []
@@ -229,11 +296,13 @@ class ResumeBuilder:
               "Refresh = Refresh Documents\n" +
               "Q = Quit\n" +
               "=====================================================\n")
+      elif userInput in ['']:
+        continue
+      elif userInput in ['Chat History']:
+        print(self.chat_history)
       else:
-        userInput = "Assume the role of " + applicant_name + " as a prospective job candidate and answer the following question '" + userInput + "'"
         print("\n... Generating answer ...\n")
-        answer = self.ask_conversational_question(userInput)
-        # answer = self.ask_conversational_question("Translate the following text into a first-person perspective as if it were written by the subject:" + answer)
+        answer = self.ask_conversational_question("You are a smart,friendly, and truthful job candidate looking for your next opportunity. ALWAYS provide your answer in the first person. Answer the following question concisely, only referencing the experiences described in the context: " + userInput)
         print(answer + "\n")
 
   # END OF CLASS ResumeBuilder ====================================================================================================
