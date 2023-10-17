@@ -22,3 +22,4 @@ Summary of Alex Worden's experience with A.I.:
 * I have experience in building systems that leverage AI techniques for the development and maintenance of proprietary data models. 
 * I have a lot of experience leading teams to deliver innovative solutions. Some of which have involved aspects of A.I. but I have learned that what is more important is creating an environment that hires the brightest and most innovative candidates, defining a product development process that identifies the objectives of the target customers and the business, then giving the engineers the support to be creative and maximize the probability of delivering successful solutions. 
 
+    
