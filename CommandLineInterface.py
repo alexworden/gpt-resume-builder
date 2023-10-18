@@ -1,6 +1,6 @@
 import os
-import SubjectContext
-import CareerAgentService
+import app.SubjectContext as SubjectContext
+import app.CareerAgentService as CareerAgentService
 
 import cli_constants
 
@@ -55,14 +55,11 @@ class CommandLineInterface:
     subject_context.job_desc = job_desc
     subject_context.job_title = job_title
     subject_context.company_name = company_name
-    self.svc.set_subject_context(subject_context)
+    self.svc.save_subject_context(subject_context)
 
   def start(self):
-    # TODO: The name of the candidate will be set dynamically when multiple subjects are supported
-    subject_context = SubjectContext.SubjectContext(applicant_name = "Alex Worden", subject_id = "AlexWorden")
-    self.svc.set_subject_context(subject_context)
-    self.svc.build_embedding_chain(subject_context.id)
     
+    subject_context = self.svc.get_subject_context("AlexWorden");
     # Print a summary of the companies that the subject has worked for
     # companies_worked_for = svc.query_embedded_context("List all of the companies that subject has worked for in a bullet list in reverse chronological order with start and end dates")
     # print(user_context.applicant_name + " has worked for the following companies:\n" + companies_worked_for + "\n")
@@ -93,7 +90,7 @@ class CommandLineInterface:
         print(cover_letter + "\n")
         self.create_pdf(cover_letter, subject_context, "coverletter")
       elif userInput in ['Refresh'] :
-        self.svc.build_embedding_chain(subject_context.id, True)
+        self.svc.initialize_subject(subject_context.id, True)
       elif userInput in ['Help']:
         print("\n=====================================================\n" +
               "Commands:\n" +

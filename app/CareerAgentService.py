@@ -1,7 +1,7 @@
 import os
 import shutil
 import json
-import SubjectContext
+import SubjectContext as SubjectContext
 
 import openai
 from langchain.chains import ConversationalRetrievalChain, RetrievalQA
@@ -15,7 +15,7 @@ from langchain.llms import OpenAI
 from langchain.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-import constants
+import constants as constants
 
 os.environ["OPENAI_API_KEY"] = constants.APIKEY
 
@@ -35,8 +35,10 @@ class CareerAgentService:
     self.store_large_chain = {}
     self.store_subject_context = {}
 
-    # TODO: Add a method to initialize the embedding_index for a given subject_context
-    # self.build_embedding_chain(self.PERSIST_FOLDER, self.PERSONAL_DOCS_FOLDER, clean=False)
+    # TODO: The name of the candidate will be set dynamically when multiple subjects are supported
+    subject_context = SubjectContext.SubjectContext(applicant_name = "Alex Worden", subject_id = "AlexWorden")
+    self.save_subject_context(subject_context)
+    self.initialize_subject(subject_context.id, rebuild_index=False)
 
 # ====================================================================================================
 # These 'private' methods will be refactored to retrieve resources that have been persisted and/or cached
@@ -45,7 +47,7 @@ class CareerAgentService:
   def get_subject_context(self, subject_id: str) -> SubjectContext:
     return self.store_subject_context[subject_id]
   
-  def set_subject_context(self, subject_context: SubjectContext):
+  def save_subject_context(self, subject_context: SubjectContext):
     if (subject_context == None or subject_context.id == None):
       raise Exception("Subject Context and its id cannot be None")
     self.store_subject_context[subject_context.id] = subject_context
@@ -144,7 +146,7 @@ class CareerAgentService:
 
   # ====================================================================================================
 
-  def build_embedding_chain(self, subject_id: str, clean=False):
+  def initialize_subject(self, subject_id: str, rebuild_index=False):
 
     subject_ctx = self.get_subject_context(subject_id)
     # if the subject_ctx is None, throw an error
@@ -155,7 +157,7 @@ class CareerAgentService:
     personal_docs_folder = self.PERSONAL_DOCS_FOLDER + "/" + subject_id
     persist_folder = self.PERSIST_FOLDER + "/" + subject_id
 
-    if (clean):
+    if rebuild_index:
       print("Rebuilding the personal docs index...")
       # if the persist_folder exists, delete it
       if os.path.exists(persist_folder):
