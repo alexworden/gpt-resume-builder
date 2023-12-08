@@ -193,8 +193,7 @@ class CareerAgentService:
     self.clear_chat_history(subject_id)
 
   # ====================================================================================================
-  # TODO: Refactor to use subject_id instead of user_context
-  def get_matching_candidate_skills(self, subject_id: str) -> (list | str):
+  def get_matching_candidate_skills(self, subject_id: str): 
     subject_context = self.get_subject_context(subject_id)
     if (subject_context == None):
       raise Exception("Subject Context not found for subject_id: " + subject_id)
@@ -245,7 +244,6 @@ class CareerAgentService:
     return (job_skills)
 
   # ====================================================================================================
-  # TODO: Refactor to use subject_id instead of user_context
   def generate_cover_letter(self, subject_id: str):
     subject_context = self.get_subject_context(subject_id)
     if (subject_context == None):
@@ -268,7 +266,6 @@ class CareerAgentService:
 
 
   # ====================================================================================================
-  # TODO: Refactor to use subject_id instead of user_context
   def generate_resume(self, subject_id: str):
 
     subject_context = self.get_subject_context(subject_id)
