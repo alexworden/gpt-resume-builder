@@ -18,28 +18,27 @@ Alex Worden's Summary of Skills and Experience
 
 Alex Worden has the following Work Experience: 
 
+Alex Worden worked as Founding Principal Engineer at Career-Agent.ai from 05/2023 - Present
 Alex Worden worked as Director of Engineering at the company: Finix Payments Inc. (known simply as Finix) from 08/2021 - 05/2023 
-
 Alex Worden worked as Director of Engineering at Company: Rocket Lawyer from 08/2019 - 08/2021
-
-Alex Worden worked as Senior Director of Engineering at the company: Bigfoot Biomedical (aka Bigfoot) from 06/2015 - 04/2019
-
+Alex Worden worked as Senior Director of Engineering at the company: Bigfoot Biomedical (aka Bigfoot) from 06/2015 - 08/2019
 Alex Worden worked as Principal Engineer & Architect at the company: General Electric from 04/2012 - 06/2015
-
 Alex Worden worked as Staff Software Engineer at the company: Google from 07/2011 - 04/2012
-
 Alex Worden worked as Senior Software Engineer at the company: Verizon Wireless (aka Verizon) from 03/2010 - 07/2011
-
 Alex Worden worked as Job Title: Lead Software Engineer at the Company: Wells Fargo from 09/2004 - 03/2010
-
 Alex Worden worked as Job Title: Customer Centric Engineering Team Lead at the company: BEA WebLogic from 03/1998 - 09/2004
-
 Alex Worden worked as Job Title: Software Engineer at the company: Division Virtual Reality (aka Division) from 07/1994 - 03/1998
 
 Alex Worden's Education:
 * 1st Class BSc Computer Science / Artificial Intelligence (Leeds University, England)
 
 Work History: 
+
+Alex Worden founded Career-Agent.ai in 05/2023 to explore the use of OpenAI's LLMs to build artificial intelligent agents that can represent a person and encompass comprehensive knowledge of their skills, experience, and philosophies. The goal of Carreer-Agent.ai is to build an intelligen agent that can provide information about a person in a tailored and personalized way support conversations with recruiters and hiring managers. Career-Agent.ai can also provide a personalized career coach that understands a person's background and can coach them on progressing their careers. 
+* Designed and built AI prototypes in Python using OpenAI's APIs. 
+* Build a web application using React and Node.js to allow users to interact with the AI agent.
+* Build custom embeddings to provide context to the AI agent.
+* Fine-tuned prompts and implemented agency to allow the AI agent to analyze job descriptions and identify the user's skills and experience that are relevant to the job. 
 
 Alex Worden worked as Director of Engineering at the company: Finix Payments Inc. (aka Finix) from 08/2021 - 05/2023
 Alex's Accomplishments at Finix include: 
@@ -64,7 +63,7 @@ Alex's Accomplishments at Rocket Lawyer:
 * Introduced streamlined, scalable, and repeatable hiring process and grew the team from 8 to over 30 in 6 months with high caliber engineers and managers. 
 * Integrated CDP and Data Warehouse to optimize customer acquisition and retention
 
-Alex Worden worked as Senior Director of Engineering at the company: Bigfoot Biomedical (aka Bigfoot) from 06/2015 - 04/2019
+Alex Worden worked as Senior Director of Engineering at the company: Bigfoot Biomedical (aka Bigfoot) from 06/2015 - 08/2019
 Alex's Accomplishments at Bigfoot Biomedical: 
 * Led the Mobile, Dashboard, and Platform Services, and Data Engineering teams responsible for delivering SaMD medical-device software using React, React Native, and microservice on AWS. 
 * Defined efficient technical hiring interviews and hired 30+ talented engineers in 9 months
